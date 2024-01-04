@@ -13,6 +13,7 @@ class BookType(DjangoObjectType):
 class Query(graphene.ObjectType):
     hello = graphene.String(default_value="Hello")
     books = graphene.List(BookType)
+    book = graphene.Field(BookType, id=graphene.ID())  # Pourquoi ID() et non Int()
 
     # def resolve_hello(self, info):
     #  return "World"
@@ -20,5 +21,27 @@ class Query(graphene.ObjectType):
     def resolve_books(self, info):
         return Book.objects.all()
 
+    def resolve_book(self, info, id):
+        return Book.objects.get(pk=id) # Pourquoi  (pk=id) et non (id=id)
+
 
 schema = graphene.Schema(query=Query)
+
+# ================= Graph QL Query ================= #
+
+# {
+#   books {
+#     id
+#     title
+#     description
+#     createdAt
+#     updatedAt
+#   }
+# }
+
+# {
+#     book(id:5){
+#     id
+# title
+# }
+# }
