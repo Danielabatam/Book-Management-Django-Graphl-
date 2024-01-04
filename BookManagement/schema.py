@@ -24,10 +24,22 @@ class CreateBookMutation(graphene.Mutation):
         return CreateBookMutation(book=book)
 
 
+class DeleteBookMutation(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    message = graphene.String()
+
+    def mutate(self, info, id):
+        book = Book.objects.get(pk=id)
+        book.delete()
+        return DeleteBookMutation(message="Book deleted")
+
+
 class Query(graphene.ObjectType):
     hello = graphene.String(default_value="Hello")
     books = graphene.List(BookType)
-    book = graphene.Field(BookType, id=graphene.ID())  # Pourquoi ID() et non Int()
+    book = graphene.Field(BookType, id=graphene.ID())
 
     # def resolve_hello(self, info):
     #  return "World"
@@ -36,12 +48,13 @@ class Query(graphene.ObjectType):
         return Book.objects.all()
 
     def resolve_book(self, info, id):
-        return Book.objects.get(pk=id)  # Pourquoi  (pk=id) et non (id=id)
+        return Book.objects.get(pk=id)
 
 
 class Mutation(graphene.ObjectType):
     # create_book = graphene.Field(BookType, title=graphene.String(), description=graphene.String())
     create_book = CreateBookMutation.Field()
+    delete_book = DeleteBookMutation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
@@ -62,5 +75,28 @@ schema = graphene.Schema(query=Query, mutation=Mutation)
 #     book(id:5){
 #     id
 # title
+# }
+# }
+
+# ================= Graph QL Mutation ================= #
+# mutation {
+#     createBook (
+#         title: "Mon premier livre",
+#     description: "Il s'agit de la description de mon premier livre"
+# ){
+#     book {
+#     id
+# title
+# description
+# createdAt
+# updatedAt
+# }
+# }
+# }
+
+
+# mutation{
+#     deleteBook(id:5){
+#     message
 # }
 # }
