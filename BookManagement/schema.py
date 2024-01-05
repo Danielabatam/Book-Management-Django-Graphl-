@@ -36,6 +36,24 @@ class DeleteBookMutation(graphene.Mutation):
         return DeleteBookMutation(message="Book deleted")
 
 
+class UpdateMutation(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        title = graphene.String()
+        description = graphene.String()
+
+    book = graphene.Field(BookType)
+
+    # message = graphene.String()
+
+    def mutate(self, info, id, title, description):
+        book = Book.objects.get(pk=id)
+        book.title = title
+        book.description = description
+        book.save()
+        return UpdateMutation(book=book)
+
+
 class Query(graphene.ObjectType):
     hello = graphene.String(default_value="Hello")
     books = graphene.List(BookType)
@@ -55,6 +73,7 @@ class Mutation(graphene.ObjectType):
     # create_book = graphene.Field(BookType, title=graphene.String(), description=graphene.String())
     create_book = CreateBookMutation.Field()
     delete_book = DeleteBookMutation.Field()
+    update_book = UpdateMutation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
@@ -100,3 +119,39 @@ schema = graphene.Schema(query=Query, mutation=Mutation)
 #     message
 # }
 # }
+
+
+# mutation{
+#     updateBook(
+#       id:5,
+#         title: "Titre (updated)"
+#         description: "Description (updated)"
+#     ){
+#       book {
+#           id
+#           title
+#           description
+#       }
+# }
+
+# ================= Mutation Test ================= #
+
+# python manage.py shell
+
+
+# import graphene
+# from BookManagement.schema import CreateBookMutation
+#
+# # Créez une instance de la mutation
+# mutation = CreateBookMutation()
+#
+# # Définissez les informations et les arguments nécessaires pour la mutation
+# info = None  # Remplacez ceci par les informations nécessaires pour la mutation
+# title = "Mon premier livre"
+# description = "Il s'agit de la description de mon premier livre"
+#
+# # Exécutez la mutation
+# result = mutation.mutate(info, title, description)
+#
+# # Imprimez le résultat pour voir le livre créé
+# print(result.book)
